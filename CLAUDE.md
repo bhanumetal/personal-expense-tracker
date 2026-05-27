@@ -4,6 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
+## Critical: AI Workflow — Plan First, Code Second
+
+Before writing any code, follow the workflow defined in `docs/ai-workflow.md` exactly:
+
+1. **Produce a written plan** — summary, docs review, files to change, architecture decisions, data flow, ordered implementation steps, and out-of-scope items
+2. **Wait for explicit user approval** — do not begin implementation on an ambiguous or absent reply
+3. **Implement strictly as approved** — stop and re-propose if any mid-task discovery requires a deviation
+
+This applies to every task that touches more than one file or involves any new route, component, server action, API handler, or database query. See `docs/ai-workflow.md` for the full rules and the plan template.
+
+## Critical: Read `/docs` Before Implementing Any Feature
+
+Before writing or modifying any code, read every file in the `/docs` directory that is relevant to the feature being implemented. These documents define the authoritative design, UI, and architectural decisions for this project. Code must conform to what is specified there — do not deviate, invent alternatives, or skip this step.
+
+Current docs:
+- `docs/ai-workflow.md` — AI development workflow; governs how all tasks are planned and executed
+- `docs/ui.md` — UI design spec; all UI code must use only the HeroUI components and patterns described here
+- `docs/auth.md` — Authentication spec; all auth, session, and data-access code must follow this exactly
+- `docs/routing.md` — Routing conventions; all routes, layouts, and middleware must follow this exactly
+- `docs/errors-and-validation.md` — Error handling and Zod validation patterns; all forms, actions, and handlers must follow this
+- `docs/security.md` — Security rules; environment variables, secrets, and data exposure constraints
+- `docs/best-practices.md` — React and Next.js performance best practices from Vercel Engineering
+- `docs/data-mutations.md` — Data mutation patterns; all writes must use Server Actions with typed Zod-validated inputs, no FormData, no client-side fetch mutations
+
 ## Critical: Read Bundled Docs Before Writing Next.js Code
 
 This project uses **Next.js 16.2.6** — a version with breaking changes from prior releases. Before writing or modifying any Next.js code, read the relevant guide in `node_modules/next/dist/docs/`. Do not rely on training data for APIs, file conventions, or routing behavior.
