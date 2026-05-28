@@ -131,7 +131,8 @@ export default function LoginPage() {
               <Separator className="flex-1" />
             </div>
 
-            <Button variant="outline" fullWidth isDisabled startContent={<GoogleIcon />}>
+            <Button variant="outline" fullWidth isDisabled>
+              <GoogleIcon />
               Continue with Google
             </Button>
           </form>

@@ -5,6 +5,7 @@ export interface IExpense extends Document {
   categoryId: Types.ObjectId;
   amount: number;
   currency: string;
+  type: 'expense' | 'income';
   description?: string;
   date: Date;
   note?: string;
@@ -18,6 +19,7 @@ const ExpenseSchema = new Schema<IExpense>(
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
     amount: { type: Number, required: true, min: 0 },
     currency: { type: String, default: "INR" },
+    type: { type: String, enum: ['expense', 'income'], default: 'expense' },
     description: { type: String, trim: true },
     date: { type: Date, required: true },
     note: { type: String, trim: true },

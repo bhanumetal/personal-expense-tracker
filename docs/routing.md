@@ -2,8 +2,6 @@
 
 This document defines the routing conventions, folder structure, and route-protection model for this project. All routing uses the **App Router** (`app/` directory). The Pages Router is not used.
 
-> **Version note:** This project runs Next.js 16.2.6. In v16 the `middleware.ts` convention was renamed to `proxy.ts`. However, `next-auth@4`'s `withAuth` helper targets `middleware.ts`. The auth spec (`docs/auth.md`) explicitly uses `middleware.ts` until NextAuth provides a `proxy.ts`-compatible API. When that compatibility lands, migrate with `npx @next/codemod@canary middleware-to-proxy .`.
-
 ---
 
 ## How Routes Are Defined
@@ -169,17 +167,17 @@ app/
 
 ---
 
-## Route Protection via Middleware
+## Route Protection via Proxy
 
-Route protection is enforced in `middleware.ts` using NextAuth's `withAuth` helper. It runs at the edge before any page or API handler.
+Route protection is enforced in `proxy.ts` using NextAuth's `withAuth` helper. It runs at the edge before any page or API handler.
 
 ```ts
-// middleware.ts
+// proxy.ts
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 
 export default withAuth(
-  function middleware(req) {
+  function proxy(req) {
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
@@ -245,7 +243,7 @@ import { redirect } from "next/navigation"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/login")   // defense in depth — middleware should have caught this
+  if (!session) redirect("/login")   // defense in depth — proxy should have caught this
 
   return (
     <div className="flex h-screen">
@@ -292,7 +290,7 @@ export async function POST(req: NextRequest) {
 ```
 
 **Rules for route handlers:**
-- Always call `getServerSession` at the top — even on protected paths where middleware ran
+- Always call `getServerSession` at the top — even on protected paths where proxy ran
 - Never accept `userId` from the request body or URL params
 - Return `401` if session is null; return `403` if session exists but user does not own the resource
 - Use `findOneAndUpdate({ _id, userId })` / `findOneAndDelete({ _id, userId })` for mutations
