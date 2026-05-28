@@ -40,7 +40,7 @@ lib/
   auth.ts                 ← authOptions config (shared across app)
   models/
     User.ts               ← existing Mongoose model
-middleware.ts             ← route protection
+proxy.ts                  ← route protection
 types/
   next-auth.d.ts          ← TypeScript module augmentation
 ```
@@ -160,7 +160,7 @@ This makes `session.user.id` and `token.id` fully typed throughout the app.
 
 ---
 
-## Middleware — `middleware.ts`
+## Proxy — `proxy.ts`
 
 Uses NextAuth's `withAuth` helper. Runs at the edge before any page or API handler.
 
@@ -169,7 +169,7 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
-  function middleware(req) {
+  function proxy(req) {
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
 
@@ -201,7 +201,7 @@ export const config = {
 };
 ```
 
-**How it works:** `withAuth` calls `authorized()` on every matched request. If the JWT token is absent or invalid, NextAuth redirects to `/login` automatically — the `middleware` function body never runs. The `matcher` excludes public routes so they are never gated.
+**How it works:** `withAuth` calls `authorized()` on every matched request. If the JWT token is absent or invalid, NextAuth redirects to `/login` automatically — the `proxy` function body never runs. The `matcher` excludes public routes so they are never gated.
 
 ---
 
@@ -230,7 +230,7 @@ import { authOptions } from "@/lib/auth";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-  const userId = session!.user.id; // middleware guarantees session exists
+  const userId = session!.user.id; // proxy guarantees session exists
   // pass userId into data-fetching functions
 }
 
@@ -406,8 +406,8 @@ await signOut({ callbackUrl: "/login" });
 | Timing-safe password comparison | `bcrypt.compare` is inherently timing-safe |
 | No `userId` from client | Always derived from `getServerSession(authOptions)` |
 | Cross-user data blocked at DB | `userId` filter on every query, not a post-fetch ownership check |
-| Public routes never gated | `matcher` in middleware excludes `/login`, `/signup`, `/api/auth/*`, `/api/register` |
-| Logged-in users redirected from auth pages | Handled in `middleware` function body |
+| Public routes never gated | `matcher` in proxy excludes `/login`, `/signup`, `/api/auth/*`, `/api/register` |
+| Logged-in users redirected from auth pages | Handled in `proxy` function body |
 
 ---
 

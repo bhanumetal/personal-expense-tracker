@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest'
 import { NextRequest, NextResponse } from 'next/server'
 
 // ---------------------------------------------------------------------------
-// The actual middleware export wraps the inner function with withAuth, which
+// The actual proxy export wraps the inner function with withAuth, which
 // requires a real NextAuth runtime. Instead of fighting the NextAuth wrapper,
-// we test the inner middleware *logic* by extracting and calling it directly.
+// we test the inner proxy *logic* by extracting and calling it directly.
 //
 // The two behaviours to test are:
 //   1. Authenticated user on /login or /signup  → redirect to /
@@ -22,11 +22,11 @@ vi.mock('next-auth/middleware', () => ({
 }))
 
 // Import AFTER the mock is set up so the mock is active at module evaluation time.
-import middlewareDefault, { config } from '@/middleware'
+import proxyDefault, { config } from '@/proxy'
 
 // ---------------------------------------------------------------------------
 // Helper: create a minimal request that satisfies the shape the inner
-// middleware function expects.
+// proxy function expects.
 // ---------------------------------------------------------------------------
 type MockToken = Record<string, string> | null
 
@@ -39,18 +39,18 @@ function makeReq(url: string, token: MockToken) {
 const ORIGIN = 'http://localhost:3000'
 
 // Cast to the shape we need after bypassing withAuth
-const middleware = middlewareDefault as unknown as (
+const proxy = proxyDefault as unknown as (
   req: NextRequest & { nextauth: { token: MockToken } }
 ) => NextResponse | undefined
 
 // ---------------------------------------------------------------------------
-// Inner middleware logic
+// Inner proxy logic
 // ---------------------------------------------------------------------------
-describe('middleware — inner function logic', () => {
+describe('proxy — inner function logic', () => {
   describe('authenticated user on auth pages', () => {
     it('redirects to / when an authenticated user visits /login', () => {
       const req = makeReq(`${ORIGIN}/login`, { sub: 'user-id', id: 'user-id' })
-      const res = middleware(req)
+      const res = proxy(req)
 
       expect(res?.status).toBe(307)
       const location = res?.headers.get('location')
@@ -59,7 +59,7 @@ describe('middleware — inner function logic', () => {
 
     it('redirects to / when an authenticated user visits /signup', () => {
       const req = makeReq(`${ORIGIN}/signup`, { sub: 'user-id', id: 'user-id' })
-      const res = middleware(req)
+      const res = proxy(req)
 
       expect(res?.status).toBe(307)
       const location = res?.headers.get('location')
@@ -70,16 +70,15 @@ describe('middleware — inner function logic', () => {
   describe('unauthenticated user on auth pages', () => {
     it('passes through (next()) when an unauthenticated user visits /login', () => {
       const req = makeReq(`${ORIGIN}/login`, null)
-      const res = middleware(req)
+      const res = proxy(req)
 
-      // NextResponse.next() returns a 200 response with no redirect
       expect(res?.status).toBe(200)
       expect(res?.headers.get('location')).toBeNull()
     })
 
     it('passes through when an unauthenticated user visits /signup', () => {
       const req = makeReq(`${ORIGIN}/signup`, null)
-      const res = middleware(req)
+      const res = proxy(req)
 
       expect(res?.status).toBe(200)
       expect(res?.headers.get('location')).toBeNull()
@@ -89,7 +88,7 @@ describe('middleware — inner function logic', () => {
   describe('authenticated user on protected pages', () => {
     it('passes through for an authenticated user on an arbitrary protected path', () => {
       const req = makeReq(`${ORIGIN}/dashboard`, { sub: 'user-id', id: 'user-id' })
-      const res = middleware(req)
+      const res = proxy(req)
 
       expect(res?.status).toBe(200)
       expect(res?.headers.get('location')).toBeNull()
@@ -97,7 +96,7 @@ describe('middleware — inner function logic', () => {
 
     it('passes through for an authenticated user on the root path', () => {
       const req = makeReq(`${ORIGIN}/`, { sub: 'user-id', id: 'user-id' })
-      const res = middleware(req)
+      const res = proxy(req)
 
       expect(res?.status).toBe(200)
     })
@@ -105,12 +104,9 @@ describe('middleware — inner function logic', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Matcher pattern — ensures public routes are excluded from the middleware
+// Matcher pattern — ensures public routes are excluded from the proxy
 // ---------------------------------------------------------------------------
-describe('middleware config.matcher', () => {
-  // The matcher is a negative-lookahead regex. We compile it to test path matching.
-  // Next.js uses a slightly different regexp format, but the pattern is a
-  // standard negative lookahead we can test directly.
+describe('proxy config.matcher', () => {
   const matchers = config.matcher as string[]
 
   it('exports a matcher array', () => {
@@ -118,10 +114,7 @@ describe('middleware config.matcher', () => {
     expect(matchers.length).toBeGreaterThan(0)
   })
 
-  // Build a RegExp from the path-to-regexp-style matcher for basic path tests.
-  // The pattern is: /((?!<excluded>).*)
   function matchesPath(pattern: string, path: string): boolean {
-    // Strip leading / for consistency; Next.js treats the matcher as a full path regex
     const re = new RegExp(`^${pattern}$`)
     return re.test(path)
   }

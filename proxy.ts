@@ -2,11 +2,10 @@ import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 
 export default withAuth(
-  function middleware(req) {
+  function proxy(req) {
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
-    // Redirect authenticated users away from auth pages
     if (token && (pathname === '/login' || pathname === '/signup')) {
       return NextResponse.redirect(new URL('/', req.url))
     }

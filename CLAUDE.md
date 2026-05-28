@@ -27,6 +27,7 @@ Current docs:
 - `docs/security.md` — Security rules; environment variables, secrets, and data exposure constraints
 - `docs/best-practices.md` — React and Next.js performance best practices from Vercel Engineering
 - `docs/data-mutations.md` — Data mutation patterns; all writes must use Server Actions with typed Zod-validated inputs, no FormData, no client-side fetch mutations
+- `docs/data-fetching.md` — Data fetching patterns; all reads must happen in Server Components using lib/data/ functions, no client-side fetching, no GET Route Handlers for UI data
 
 ## Critical: Read Bundled Docs Before Writing Next.js Code
 
