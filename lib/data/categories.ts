@@ -25,3 +25,14 @@ export const getCategories = cache(async (): Promise<SerializedCategory[]> => {
     isDefault: c.isDefault,
   }))
 })
+
+export const getCategoryById = cache(async (id: string): Promise<SerializedCategory | null> => {
+  const session = await getServerSession(authOptions)
+  if (!session) return null
+
+  await connectDB()
+  const c = await Category.findOne({ _id: id, userId: session.user.id }).lean()
+  if (!c) return null
+
+  return { id: c._id.toString(), name: c.name, isDefault: c.isDefault }
+})
