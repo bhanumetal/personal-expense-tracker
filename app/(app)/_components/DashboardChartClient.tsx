@@ -1,38 +1,84 @@
 'use client'
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import '@/lib/chart-registry'
+import { Bar } from 'react-chartjs-2'
+import type { ChartOptions } from 'chart.js'
 import type { MonthlyTrendItem } from '@/lib/data/summary'
 
 interface Props {
   data: MonthlyTrendItem[]
 }
 
+function getCSSVar(name: string): string {
+  if (typeof window === 'undefined') return ''
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
 export function DashboardChartClient({ data }: Props) {
+  const primary = `hsl(${getCSSVar('--heroui-primary')})`
+  const gridColor = `var(--heroui-default-200)`
+  const tickColor = `var(--heroui-default-500)`
+
+  const chartData = {
+    labels: data.map((d) => d.label),
+    datasets: [
+      {
+        data: data.map((d) => d.total),
+        backgroundColor: primary,
+        borderRadius: 4,
+        borderSkipped: false as const,
+      },
+    ],
+  }
+
+  const options: ChartOptions<'bar'> = {
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) =>
+            new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0,
+            }).format(ctx.parsed.y ?? 0),
+        },
+        backgroundColor: `var(--heroui-content1)`,
+        borderColor: `var(--heroui-default-200)`,
+        borderWidth: 1,
+        titleColor: tickColor,
+        bodyColor: tickColor,
+        padding: 10,
+        cornerRadius: 8,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: tickColor, font: { size: 12 } },
+      },
+      y: {
+        grid: { color: gridColor },
+        border: { display: false, dash: [4, 4] },
+        ticks: {
+          color: tickColor,
+          font: { size: 12 },
+          callback: (v) => {
+            const n = Number(v)
+            if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`
+            if (n >= 1_000) return `₹${(n / 1_000).toFixed(0)}k`
+            return `₹${n}`
+          },
+        },
+      },
+    },
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--heroui-default-200)" />
-        <XAxis
-          dataKey="label"
-          tick={{ fontSize: 12, fill: 'var(--heroui-default-500)' }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <YAxis
-          tick={{ fontSize: 12, fill: 'var(--heroui-default-500)' }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
-          width={48}
-        />
-        <Tooltip
-          formatter={(value) =>
-            new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value))
-          }
-          contentStyle={{ borderRadius: '8px', border: '1px solid var(--heroui-default-200)' }}
-        />
-        <Bar dataKey="total" fill="hsl(var(--heroui-primary))" radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="h-[220px] w-full">
+      <Bar data={chartData} options={options} />
+    </div>
   )
 }

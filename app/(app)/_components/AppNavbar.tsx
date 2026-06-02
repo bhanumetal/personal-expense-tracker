@@ -2,7 +2,7 @@
 
 import NextLink from 'next/link'
 import { signOut } from 'next-auth/react'
-import { Avatar, Button, Drawer, Dropdown, Header } from '@heroui/react'
+import { Avatar, Button, Drawer, Dropdown, Header, SwitchRoot, SwitchControl, SwitchThumb, useTheme } from '@heroui/react'
 import { useOverlayState } from '@heroui/react'
 
 type User = {
@@ -28,6 +28,8 @@ function getInitials(name?: string | null): string {
 export function AppNavbar({ user }: { user: User }) {
   const drawerState = useOverlayState()
   const initials = getInitials(user.name)
+  const { resolvedTheme, setTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
 
   function handleSignOut() {
     signOut({ callbackUrl: '/login' })
@@ -58,7 +60,19 @@ export function AppNavbar({ user }: { user: User }) {
       </nav>
 
       {/* Right section */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
+        {/* Theme toggle */}
+        <SwitchRoot
+          isSelected={isDark}
+          onChange={() => setTheme(isDark ? 'light' : 'dark')}
+          aria-label="Toggle dark mode"
+        >
+          <SwitchControl>
+            <SwitchThumb />
+          </SwitchControl>
+          {isDark ? <MoonIcon /> : <SunIcon />}
+        </SwitchRoot>
+
         {/* Avatar + dropdown */}
         <Dropdown.Root>
           <Dropdown.Trigger
@@ -150,6 +164,43 @@ function WalletIcon() {
       <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
       <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
       <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+    </svg>
+  )
+}
+
+function SunIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
     </svg>
   )
 }

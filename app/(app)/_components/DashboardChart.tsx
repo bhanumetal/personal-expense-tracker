@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Tabs, TabList, Tab } from '@heroui/react'
+import { Card, CardHeader, CardContent, Tabs, TabList, Tab } from '@heroui/react'
 import { getMonthlyTrend } from '@/lib/data/summary'
 import { DashboardChartClient } from './DashboardChartClient'
 
@@ -7,7 +7,7 @@ export async function DashboardChart() {
 
   return (
     <Card className="w-full">
-      <CardHeader className="flex items-center justify-between p-4 pb-0">
+      <CardHeader className="flex items-center justify-between pb-0">
         <p className="text-base font-semibold">Monthly Spending</p>
         <Tabs aria-label="Chart range">
           <TabList>
@@ -16,7 +16,7 @@ export async function DashboardChart() {
           </TabList>
         </Tabs>
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent>
         <DashboardChartClient data={trend} />
       </CardContent>
     </Card>

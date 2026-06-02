@@ -28,6 +28,7 @@ Current docs:
 - `docs/best-practices.md` — React and Next.js performance best practices from Vercel Engineering
 - `docs/data-mutations.md` — Data mutation patterns; all writes must use Server Actions with typed Zod-validated inputs, no FormData, no client-side fetch mutations
 - `docs/data-fetching.md` — Data fetching patterns; all reads must happen in Server Components using lib/data/ functions, no client-side fetching, no GET Route Handlers for UI data
+- `docs/charts.md` — Chart and visualization patterns; all charts must use react-chartjs-2 with the patterns defined here (responsive containers, HeroUI theme tokens, Server/Client split)
 
 ## Critical: Read Bundled Docs Before Writing Next.js Code
 
